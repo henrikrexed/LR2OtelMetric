@@ -1,6 +1,8 @@
 <!-- LoadRunner Logo -->
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/Micro_Focus_LoadRunner_Logo.png" alt="LoadRunner Logo" width="200"/>
+  <a href="https://en.wikipedia.org/wiki/File:HPE_LoadRunner_logo.png">
+    <img src="https://upload.wikimedia.org/wikipedia/en/6/61/HPE_LoadRunner_logo.png" alt="LoadRunner Logo" width="200"/>
+  </a>
 </p>
 
 # sumdat2otel
