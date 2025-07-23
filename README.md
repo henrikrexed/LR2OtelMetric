@@ -5,9 +5,9 @@
   </a>
 </p>
 
-# sumdat2otel
+# lr2otelmetric
 
-**sumdat2otel** is a post-processing/export tool designed to send LoadRunner test results to an OpenTelemetry endpoint after a LoadRunner test run.
+**lr2otelmetric** is a post-processing/export tool designed to send LoadRunner test results to an OpenTelemetry endpoint after a LoadRunner test run.
 
 After your LoadRunner scenario completes, this tool parses the results (sum_dat.ini and graph_X.dat files) and exports the metrics to your observability backend (OTLP or console), enabling integration with modern observability platforms.
 
