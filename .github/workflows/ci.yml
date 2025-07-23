@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Run unit tests
+        run: make test
+
+      - name: Build binary
+        run: make build
+
+      - name: Sanity check (expect usage output)
+        run: |
+          set +e
+          ./lr2otelmetric || true
+          ./lr2otelmetric --help || true
+
+  scorecard:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: OpenSSF Scorecard analysis
+        uses: ossf/scorecard-action@v2
+        with:
+          results_file: results.sarif
+          results_format: sarif
+      - name: Upload Scorecard results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build linux/amd64 binary
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o lr2otelmetric-linux-amd64 src/parse_vuser_log.go
+
+      - name: Build linux/arm64 binary
+        run: |
+          GOOS=linux GOARCH=arm64 go build -o lr2otelmetric-linux-arm64 src/parse_vuser_log.go
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+      - name: Upload linux/amd64 binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./lr2otelmetric-linux-amd64
+          asset_name: lr2otelmetric-linux-amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload linux/arm64 binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./lr2otelmetric-linux-arm64
+          asset_name: lr2otelmetric-linux-arm64
+          asset_content_type: application/octet-stream 
