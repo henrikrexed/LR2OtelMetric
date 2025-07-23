@@ -12,13 +12,13 @@ DOCKER_IMAGE=lr2otelmetric
 PLATFORM?=linux/amd64
 
 build:
-	go build -o $(BINARY) $(SRC)
+	cd src && go build -o ../lr2otelmetric parse_vuser_log.go
 
 docker:
 	docker build --platform=$(PLATFORM) -t $(DOCKER_IMAGE) .
 
 test:
-	go test ./src/...
+	cd src && go test ./...
 
 clean:
 	rm -f $(BINARY) 
